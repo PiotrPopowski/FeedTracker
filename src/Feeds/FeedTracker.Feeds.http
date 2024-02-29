@@ -1,0 +1,6 @@
+@FeedTracker.Feeds_HostAddress = http://localhost:5275
+
+GET {{FeedTracker.Feeds_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,50 @@
+version: "3.4"
+
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:1.54
+
+  prometheus:
+    build: ./Prometheus
+
+  grafana:
+    image: grafana/grafana-enterprise
+
+  redis:
+    image: redis:alpine
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+
+  seq:
+    image: datalust/seq:latest
+
+  feedtracker.notifier:
+    image: ${DOCKER_REGISTRY-}feedtrackernotifier
+    build:
+      context: .
+      dockerfile: src/Notifier/Dockerfile
+
+  feedtracker.aggregator:
+    image: ${DOCKER_REGISTRY-}feedtrackeraggregator
+    build:
+      context: .
+      dockerfile: src/Aggregator/Dockerfile
+
+  feedtracker.feeds:
+    image: ${DOCKER_REGISTRY-}feedtrackerfeeds
+    build:
+      context: .
+      dockerfile: src/Feeds/Dockerfile
+
+  feedtracker.gateway:
+    image: ${DOCKER_REGISTRY-}feedtrackergateway
+    build:
+      context: .
+      dockerfile: src/Gateway/Dockerfile
+
+  feedtracker.subscribers:
+    image: ${DOCKER_REGISTRY-}feedtrackersubscribers
+    build:
+      context: .
+      dockerfile: src/Subscribers/Dockerfile

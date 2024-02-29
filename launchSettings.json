@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "Docker Compose": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "serviceActions": {
+        "feedtracker.notifier": "StartDebugging",
+        "feedtracker.aggregator": "StartDebugging",
+        "feedtracker.feeds": "StartDebugging",
+        "feedtracker.gateway": "StartDebugging",
+        "feedtracker.subscribers": "StartDebugging"
+      }
+    }
+  }
+}

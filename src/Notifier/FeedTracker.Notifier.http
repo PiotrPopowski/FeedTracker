@@ -1,0 +1,6 @@
+@FeedTracker.Notifier_HostAddress = http://localhost:5210
+
+GET {{FeedTracker.Notifier_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

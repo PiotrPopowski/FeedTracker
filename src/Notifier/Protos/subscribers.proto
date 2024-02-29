@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+option csharp_namespace = "FeedTracker.Subscribers.Protos";
+
+package subscribers.protos;
+
+service SubscriberService {
+	rpc GetSubscribers(GetSubscribersRequest) returns (GetSubscribersResponse);
+}
+
+message GetSubscribersRequest { }
+message GetSubscribersResponse { 
+	repeated string emails = 1;
+}

@@ -1,0 +1,110 @@
+version: '3.4'
+
+services:
+  jaeger:
+    container_name: jaeger
+    restart: unless-stopped
+    environment: 
+     - COLLECTOR_OTLP_ENABLED=true
+    ports:
+     - "5778:5778"
+     - "16686:16686"
+     - "4317:4317"
+     - "4318:4318"
+     - "14269:14269"
+
+  grafana:
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+     - '3000:3000'
+
+  redis:
+    container_name: redis
+    restart: always
+
+  prometheus:
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+
+  rabbitmq:
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "15672:15672"
+
+  seq:
+    container_name: seq
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - 8081:80
+
+  feedtracker.aggregator:
+    container_name: feedtracker.aggregator
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=80
+      - Messaging__Host=amqp://guest:guest@rabbitmq:5672
+      - Seq__Host=http://seq:5341
+    ports:
+      - "8001:80"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+    depends_on:
+      - feedtracker.feeds
+
+  feedtracker.feeds:
+    container_name: feedtracker.feeds
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=80
+      - Redis__ConnectionString=redis
+      - Seq__Host=http://seq:5341
+    ports:
+      - "8002:80"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+    depends_on:
+      - rabbitmq
+
+  feedtracker.gateway:
+    container_name: feedtracker.gateway
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=80
+      - Seq__Host=http://seq:5341
+    ports:
+      - "8003:80"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
+  feedtracker.notifier:
+    container_name: feedtracker.notifier
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=80
+      - GrpcSettings__SubscribersConnection=http://feedtracker.subscribers
+      - Messaging__Host=amqp://guest:guest@rabbitmq:5672
+      - Seq__Host=http://seq:5341
+    ports:
+      - "8004:80"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
+  feedtracker.subscribers:
+    container_name: feedtracker.subscribers
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=80
+      - Seq__Host=http://seq:5341
+    ports:
+      - "8005:80"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
