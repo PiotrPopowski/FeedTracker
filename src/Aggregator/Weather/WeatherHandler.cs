@@ -1,5 +1,4 @@
 ﻿using FeedTracker.Aggregator.Weather.Rules;
-using FeedTracker.Contracts;
 using FeedTracker.Contracts.Weather;
 using FeedTracker.Shared.Messaging;
 using FeedTracker.Shared.Observability;

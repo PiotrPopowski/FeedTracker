@@ -1,7 +1,8 @@
 ﻿using FeedTracker.Shared.Serialization;
 using FeedTracker.Shared.Streaming;
 using StackExchange.Redis;
-using System.Diagnostics;
+using FeedTracker.Shared.Observability.Utilities;
+using FeedTracker.Shared.Observability;
 
 namespace FeedTracker.Shared.Redis.Streaming
 {
@@ -9,13 +10,11 @@ namespace FeedTracker.Shared.Redis.Streaming
     {
         private readonly ISubscriber _subscriber;
         private readonly ISerializer _serializer;
-        private readonly ActivitySource _activitySource;
 
-        public RedisStreamSubscriber(IConnectionMultiplexer multiplexer, ISerializer serializer, ActivitySource activitySource)
+        public RedisStreamSubscriber(IConnectionMultiplexer multiplexer, ISerializer serializer)
         {
             _subscriber = multiplexer.GetSubscriber();
             _serializer = serializer;
-            _activitySource = activitySource;
         }
 
         public Task SubscribeAsync<T>(string topic, Action<T, StreamContext<T>> handler) where T : class
@@ -26,13 +25,14 @@ namespace FeedTracker.Shared.Redis.Streaming
                 if (payload is null)
                     return;
 
-                var parentLink = new List<ActivityLink>();
-                if(payload.Context.HasValue) parentLink.Add(new ActivityLink(payload.Context.Value));
-
-                using var span = _activitySource.StartActivity($"processing-{typeof(T).Name}", ActivityKind.Consumer, payload.Context ?? default, null, parentLink);
+                using var span = DiagnosticsConfig.Source
+                    .StartActivityFromPropagationContext(DiagnosticNames.ProcessingMessage<T>(), payload, ExtractContextFromStream);
 
                 handler(payload.Message, payload);
             });
         }
+
+        private IEnumerable<string> ExtractContextFromStream<T>(StreamContext<T> context, string key) where T : class
+            => context.ApplicationProperties.TryGetValue(key, out var value) ? new List<string> { value } : Enumerable.Empty<string>();
     }
 }

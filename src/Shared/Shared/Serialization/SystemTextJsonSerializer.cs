@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using FeedTracker.Shared.Serialization.Converters;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace FeedTracker.Shared.Serialization
@@ -9,10 +10,10 @@ namespace FeedTracker.Shared.Serialization
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             PropertyNameCaseInsensitive = true,
-            Converters = 
-            { 
+            Converters =
+            {
                 new JsonStringEnumConverter(JsonNamingPolicy.CamelCase),
-                new ActivityContextSerializer()
+                new JsonActivityContextConverter()
             }
         };
 

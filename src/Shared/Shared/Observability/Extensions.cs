@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using FeedTracker.Shared.Observability.Utilities;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,6 +30,7 @@ namespace FeedTracker.Shared.Observability
         public static IServiceCollection AddOpenTelemerty(this IServiceCollection services, string serviceName)
         {
             ActivitySource activitySource = new(serviceName);
+            DiagnosticsConfig.Configure(activitySource);
 
             services.AddOpenTelemetry()
                     .ConfigureResource(r => r.AddService(serviceName))
